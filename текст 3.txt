@@ -1,0 +1,53 @@
+# Telegram Suno Music Bot
+
+A Telegram bot that turns natural-language music ideas into generated audio through aiogram and GoAPI's Suno API.
+
+## Run & Operate
+
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `uv run python telegram-bot/main.py` — run the Telegram music bot
+- `pnpm run typecheck` — full typecheck across all packages
+- `pnpm run build` — typecheck + build all packages
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- Required env: `DATABASE_URL` — Postgres connection string
+
+## Stack
+
+- pnpm workspaces, Node.js 24, TypeScript 5.9
+- API: Express 5
+- DB: PostgreSQL + Drizzle ORM
+- Validation: Zod (`zod/v4`), `drizzle-zod`
+- API codegen: Orval (from OpenAPI spec)
+- Build: esbuild (CJS bundle)
+- Bot: Python 3.11, aiogram 3, aiohttp
+
+## Where things live
+
+- `telegram-bot/main.py` — Telegram handlers and GoAPI task lifecycle
+- `telegram-bot/README.md` — bot commands, setup, and current GoAPI limitation
+- `pyproject.toml` — Python runtime dependencies
+
+## Architecture decisions
+
+- The bot uses GoAPI's unified create-task and get-task endpoints with long polling.
+- GoAPI credentials are read only from Replit Secrets; they are never logged.
+- A per-chat lock prevents duplicate generations while a track is in progress.
+
+## Product
+
+- Users can send a plain-language music idea or use `/generate`.
+- The bot reports progress, downloads the completed audio, and sends it back to Telegram.
+- `/help` and `/cancel` provide the basic user controls.
+
+## User preferences
+
+- Keep `TELEGRAM_BOT_TOKEN` and `SUNO_API_KEY` in Replit Secrets.
+
+## Gotchas
+
+- GoAPI currently documents Suno as sunsetting; generation errors are surfaced to the user.
+
+## Pointers
+
+- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
